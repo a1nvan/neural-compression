@@ -1,5 +1,7 @@
-data/
-results/
+data/raw/*
+data/compressed/*
+results/*
+!**/ .gitkeep
 __pycache__/
 .DS_Store
 *.zip
