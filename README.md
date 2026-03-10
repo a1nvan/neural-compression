@@ -30,3 +30,17 @@ python src/compressor.py
 ```bash
 !python src/compressor.py
 ```
+
+### Results specification (results/stats.csv)
+
+The final table contains the following fields:
+
+| Column | Description | Units of measurement |
+| :--- | :--- | :--- |
+| **file** | Name of the source image | — |
+| **model** | Model architecture (`attention` or `anchor`) | — |
+| **q** | Target quality level | 1-6 |
+| **bpp** | Real Bitrate (Bits Per Pixel) | bit/pixel |
+| **psnr** | Peak signal-to-noise ratio | dB |
+
+**Note:** The combination of low **bpp** and high **psnr** indicates the effectiveness of the algorithm. This data is necessary for constructing Rate-Distortion curves.

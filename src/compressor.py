@@ -6,6 +6,8 @@ from PIL import Image
 import os
 import pandas as pd
 from tqdm import tqdm
+import numpy as np
+from skimage.metrics import peak_signal_noise_ratio as psnr_metric
 
 def setup_env():
     os.makedirs("data/raw", exist_ok=True)
@@ -45,8 +47,6 @@ def compress_and_save(input_dir, output_base, device):
                 padding = (0, new_w - w, 0, new_h - h)
                 x_padded = F.pad(x, padding, mode='constant', value=0)
                 
-                
-
                 with torch.no_grad():
                     out_enc = model.compress(x_padded)
                     
@@ -56,10 +56,21 @@ def compress_and_save(input_dir, output_base, device):
                     out_dec = model.decompress(out_enc['strings'], out_enc['shape'])
                     x_hat = out_dec['x_hat'][:, :, :h, :w]
                 
+                # Расчет PSNR
+                orig_np = x.squeeze().cpu().numpy()
+                rec_np = x_hat.squeeze().cpu().numpy().clip(0, 1)
+                val_psnr = psnr_metric(orig_np, rec_np, data_range=1.0)
+                
                 rec_img = transforms.ToPILImage()(x_hat.squeeze().cpu().clamp(0, 1))
                 rec_img.save(os.path.join(out_path, img_name))
                 
-                results.append({'file': img_name, 'model': m_name, 'q': q, 'bpp': bpp})
+                results.append({
+                    'file': img_name, 
+                    'model': m_name, 
+                    'q': q, 
+                    'bpp': bpp,
+                    'psnr': val_psnr
+                })
                 
             del model
             if torch.cuda.is_available():
@@ -72,7 +83,7 @@ if __name__ == "__main__":
     raw = "data/raw"
     comp = "data/compressed"
     
-    if not os.listdir(raw):
+    if not os.path.exists(raw) or not os.listdir(raw):
         print(f"Dir {raw} is empty!")
     else:
         data = compress_and_save(raw, comp, dev)
