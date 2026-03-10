@@ -3,6 +3,6 @@ data/compressed/*
 results/*
 !**/ .gitkeep
 __pycache__/
-.DS_Store
+.DS_St
 *.zip
 venv/
